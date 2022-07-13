@@ -2,7 +2,6 @@ package com.example.springdata
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext
@@ -16,7 +15,6 @@ class SpringDataApp {
 		LOG.info("Spring Data App started")
 		val ctx: ConfigurableApplicationContext = runApplication<SpringDataApp>(*args)
 		ctx.registerShutdownHook()
-
 	}
 }
 
