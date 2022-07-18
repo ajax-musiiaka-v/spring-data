@@ -9,5 +9,4 @@ class SpringDataAppTests {
 	fun contextLoads() {
 		//TODO("Not implemented yet")
 	}
-
 }

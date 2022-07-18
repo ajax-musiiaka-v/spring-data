@@ -21,7 +21,7 @@ class UserServiceController(private val userService: UserService) {
         return ResponseEntity.ok(UserId(id))
     }
 
-    @GetMapping("users")
+    @GetMapping("/users")
     fun getAll(): ResponseEntity<Collection<UserData>> {
         val entities = userService.getAll()
         val users: Collection<UserData> = entities.map { transform(it) }

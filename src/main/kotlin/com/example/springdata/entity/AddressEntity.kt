@@ -1,18 +1,15 @@
 package com.example.springdata.entity
 
-import javax.persistence.*
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
 
-@Entity
-@Table(name = "ADDRESSES")
+@Document(collection="addresses")
 class AddressEntity {
 
     @Id
-    @Column(name = "id")
     internal lateinit var id: String
 
-    @Column(name = "street")
     internal lateinit var street: String
 
-    @Column(name = "city")
     internal lateinit var city: String
 }

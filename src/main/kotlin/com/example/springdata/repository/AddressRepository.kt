@@ -1,7 +1,6 @@
 package com.example.springdata.repository
 
 import com.example.springdata.entity.AddressEntity
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 
-interface AddressRepository : JpaRepository<AddressEntity,String> {
-}
+interface AddressRepository : MongoRepository<AddressEntity, String>

@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 
+
 plugins {
 	id("org.springframework.boot") version "2.7.1"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
@@ -19,13 +20,13 @@ repositories {
 dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
 
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.mongodb:mongodb-driver-sync:4.6.0")
 
-	implementation("com.h2database:h2")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
 	implementation("org.flywaydb:flyway-core")
-	implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
+//	implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("com.h2database:h2")
