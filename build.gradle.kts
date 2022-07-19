@@ -28,10 +28,9 @@ dependencies {
 	implementation("org.flywaydb:flyway-core")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("com.h2database:h2")
+
 	testImplementation("org.testcontainers:testcontainers:1.17.2")
 	testImplementation("org.testcontainers:junit-jupiter:1.17.2")
-	testImplementation("org.testcontainers:postgresql:1.17.2")
 }
 
 tasks.withType<KotlinCompile> {

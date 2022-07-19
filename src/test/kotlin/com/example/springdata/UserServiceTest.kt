@@ -5,14 +5,12 @@ import com.example.springdata.service.UserService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 
 
 @SpringBootTest
-@ActiveProfiles("h2")
 class UserServiceTest {
 
     @Autowired
@@ -20,20 +18,31 @@ class UserServiceTest {
 
     @Test
     fun testUserService() {
+        val name = "John"
+        val email = "doe@mail.com"
+
         assertEquals(0, userService!!.getAll().size)
-        val id = userService!!.createUser("john", "doe")
-        assertNotNull(id)
+        val user = userService!!.createUser(name, email)
+        assertNotNull(user)
 
         val users: Collection<User> = userService!!.getAll()
         assertEquals(1, users.size)
 
-        val user: User? = users.firstOrNull()
-        assertNotNull(user)
-        assertEquals(id, user?.id)
-        assertEquals("john", user?.name)
-        assertEquals("doe", user?.email)
+        val userFound: User? = users.firstOrNull()
+        assertNotNull(userFound)
 
-        userService!!.deleteUser(id)
+        assertEquals(name, userFound?.name)
+        assertEquals(email, userFound?.email)
+
+        val userByName = userService!!.findByName(name)
+        assertNotNull(userByName)
+        assertEquals(name, userByName?.name)
+
+        val userByEmail = userService!!.findByEmail(email)
+        assertNotNull(userByEmail)
+        assertEquals(email, userByEmail?.email)
+
+        userService!!.deleteUser(userFound!!.id.toString())
         assertEquals(0, userService!!.getAll().size)
     }
 }

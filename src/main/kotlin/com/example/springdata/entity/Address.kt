@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 @Document(collection = "addresses")
 data class Address(
-    @Id internal val id: ObjectId = ObjectId.get(),
+    @Id internal val id: ObjectId? = null,
     internal var street: String,
     internal var city: String,
 )

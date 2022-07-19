@@ -29,14 +29,16 @@ class UserServiceImpl(private val userRepository: UserRepository,
         return userRepository.findAll()
     }
 
-    fun findById(id: String): User =
-        userRepository.findById(id).get()
-
-
     override fun deleteUser(id: String) {
-        val userToDelete = findById(id)
+        val userToDelete = userRepository.findById(id)
         userRepository.delete(userToDelete)
     }
+
+    override fun findByName(name: String): User? =
+        userRepository.findByName(name).first()
+
+    override fun findByEmail(email: String): User? =
+        userRepository.findByEmail(email).first()
 
     private fun createAddress(): Address =
         Address(

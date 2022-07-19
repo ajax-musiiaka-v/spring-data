@@ -9,5 +9,9 @@ interface UserService {
 
     fun getAll(): Collection<User>
 
+    fun findByName(name: String): User?
+
+    fun findByEmail(email: String): User?
+
     fun deleteUser(id: String)
 }

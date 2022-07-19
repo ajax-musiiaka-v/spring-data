@@ -1,14 +1,20 @@
 package com.example.springdata.repository
 
 import com.example.springdata.entity.User
+import org.bson.types.ObjectId
 import org.springframework.data.mongodb.repository.MongoRepository
-import org.springframework.data.repository.query.Param
+import org.springframework.data.mongodb.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserRepository : MongoRepository<User, String> {
+interface UserRepository : MongoRepository<User, ObjectId> {
 
-    fun findByEmail(@Param("email") email: String): List<User>
+    @Query("{'email' : ?0}")
+    fun findByEmail(email: String): List<User>
 
-    fun findByName(@Param("name") name: String)
+    @Query("{'name' : ?0}")
+    fun findByName(name: String): List<User>
+
+    @Query("{'_id' : ?0}")
+    fun findById(id: String): User
 }
