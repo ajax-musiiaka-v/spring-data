@@ -1,6 +1,6 @@
 package com.example.springdata
 
-import com.example.springdata.entity.UserEntity
+import com.example.springdata.entity.User
 import com.example.springdata.service.UserService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,10 +24,10 @@ class UserServiceTest {
         val id = userService!!.createUser("john", "doe")
         assertNotNull(id)
 
-        val users: Collection<UserEntity> = userService!!.getAll()
+        val users: Collection<User> = userService!!.getAll()
         assertEquals(1, users.size)
 
-        val user: UserEntity? = users.firstOrNull()
+        val user: User? = users.firstOrNull()
         assertNotNull(user)
         assertEquals(id, user?.id)
         assertEquals("john", user?.name)

@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 
 
-class UserId @JsonCreator constructor(
+data class UserId @JsonCreator constructor(
     @param:JsonProperty("id") val id: String
 )
