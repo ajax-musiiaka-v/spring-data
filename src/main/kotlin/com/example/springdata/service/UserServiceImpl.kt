@@ -3,7 +3,9 @@ package com.example.springdata.service
 import com.example.springdata.entity.Address
 import com.example.springdata.entity.User
 import com.example.springdata.repository.AddressRepository
+import com.example.springdata.repository.BankAccountRepository
 import com.example.springdata.repository.UserRepository
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,17 +14,18 @@ class UserServiceImpl(private val userRepository: UserRepository,
 
     override fun createUser(userName: String, userEmail: String): User {
         val userAddress = createAddress()
-        addressRepository.save(userAddress)
+        val savedAddress = addressRepository.save(userAddress)
 
         val user = User(
                 name = userName,
                 email = userEmail,
-                address = userAddress,
+                addressId = savedAddress.id,
                 enabled = true
             )
-        userRepository.save(user)
 
-        return user
+        val savedUser = userRepository.save(user)
+
+        return savedUser
     }
 
     override fun getAll(): Collection<User> {
@@ -30,15 +33,19 @@ class UserServiceImpl(private val userRepository: UserRepository,
     }
 
     override fun deleteUser(id: String) {
-        val userToDelete = userRepository.findById(id)
-        userRepository.delete(userToDelete)
+        val addressId = userRepository.findById(ObjectId(id)).get().addressId
+        if (addressId != null) {
+            addressRepository.deleteById(addressId)
+        }
+        userRepository.deleteById(ObjectId(id))
     }
 
+
     override fun findByName(name: String): User? =
-        userRepository.findByName(name).first()
+        userRepository.findByName(name)
 
     override fun findByEmail(email: String): User? =
-        userRepository.findByEmail(email).first()
+        userRepository.findByEmail(email)
 
     private fun createAddress(): Address =
         Address(
