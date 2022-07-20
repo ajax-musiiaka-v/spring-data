@@ -13,21 +13,18 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
 
     override fun createBankAccount(userId: ObjectId, accountName: String): BankAccount {
         val account = BankAccount(
-            holderId = userId,
             name = accountName
         )
 
         val savedAccount = accountRepository.save(account)
+        userRepository.findById(userId).get().bankAccountId = savedAccount.id
 
         return savedAccount
     }
 
-    override fun deleteAccount(accountId: ObjectId) {
-        val holderId: ObjectId? = accountRepository.findById(accountId).get().holderId
-        if (holderId != null) {
-            userRepository.findById(holderId).get().bankAccountId = null
-        }
-        accountRepository.deleteById(accountId)
+    override fun deleteAccount(bankAccountId: ObjectId) {
+        userRepository.findByBankAccountId(bankAccountId)?.bankAccountId = null
+        accountRepository.deleteById(bankAccountId)
     }
 
     override fun deposit(accountId: ObjectId, depositAmount: Double) {

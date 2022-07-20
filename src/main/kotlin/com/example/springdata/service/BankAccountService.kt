@@ -6,7 +6,7 @@ import org.bson.types.ObjectId
 interface BankAccountService {
     fun createBankAccount(userId: ObjectId, accountName: String = "default"): BankAccount
 
-    fun deleteAccount(accountId: ObjectId)
+    fun deleteAccount(bankAccountId: ObjectId)
 
     fun deposit(accountId: ObjectId, depositAmount: Double)
 

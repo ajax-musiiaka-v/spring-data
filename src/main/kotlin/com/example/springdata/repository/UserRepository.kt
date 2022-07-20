@@ -12,4 +12,6 @@ interface UserRepository : MongoRepository<User, ObjectId> {
 
     fun findByName(name: String): User?
 
+    fun findByBankAccountId(bankAccountId: ObjectId): User?
+
 }
