@@ -41,7 +41,6 @@ class UserServiceTest {
 
     @AfterEach
     fun teardown() {
-        println("Tear down called")
         val db: MongoDatabase = mongoClient.getDatabase(databaseName)
         db.getCollection("users").deleteMany(Document("name", name))
         db.getCollection("users").deleteMany(Document("email", email))

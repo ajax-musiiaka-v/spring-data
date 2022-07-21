@@ -28,9 +28,8 @@ class UserServiceImpl(private val userRepository: UserRepository,
         return savedUser
     }
 
-    override fun getAll(): Collection<User> {
-        return userRepository.findAll()
-    }
+    override fun getAll(): Collection<User> =
+        userRepository.findAll()
 
     override fun deleteUser(id: String) {
         val addressId = userRepository.findById(ObjectId(id)).get().addressId
