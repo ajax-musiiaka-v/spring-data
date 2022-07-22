@@ -1,40 +1,40 @@
 package com.example.springdata.service
 
 import com.example.springdata.entity.BankAccount
-import com.example.springdata.entity.User
 import com.example.springdata.repository.BankAccountRepository
-import com.example.springdata.repository.UserRepository
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import java.lang.UnsupportedOperationException
 
 @Service
 class BankAccountServiceImpl(private val accountRepository: BankAccountRepository,
-                             private val userRepository: UserRepository) : BankAccountService {
+                             private val userService: UserService
+                             ) : BankAccountService {
 
     override fun getAll(): Collection<BankAccount> =
         accountRepository.findAll()
 
     override fun createBankAccount(userId: ObjectId, accountName: String): BankAccount {
-        val account = BankAccount(
-            name = accountName
-        )
+        val user = userService.findById(userId) ?:
+                            throw NoSuchElementException("User with id $userId not found")
 
+        val account = BankAccount(name = accountName)
         val savedAccount = accountRepository.save(account)
-        val user = userRepository.findById(userId).get()
+
         user.bankAccountId = savedAccount.id
-        userRepository.save(user)
+        userService.updateUser(user)
 
         return savedAccount
     }
 
-    override fun deleteAccount(bankAccountId: ObjectId) {
-        val user: User? = userRepository.findByBankAccountId(bankAccountId)
-        if(user != null) {
-            user.bankAccountId = null
-            userRepository.save(user)
-        }
-        accountRepository.deleteById(bankAccountId)
+    override fun deleteAccount(bankAccountId: String) {
+        val objectId = ObjectId(bankAccountId)
+        val user = userService.findByBankAccountId(objectId) ?:
+                throw NoSuchElementException("User with bank account id $bankAccountId not found")
+
+        user.bankAccountId = null
+        userService.updateUser(user)
+        accountRepository.deleteById(objectId)
     }
 
     override fun deposit(accountId: ObjectId,
@@ -79,6 +79,7 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
         return accountRepository.saveAll(listOf(accountFrom, accountTo))
     }
 
-    private fun getAccount(accountId: ObjectId) =
-        accountRepository.findById(accountId).get()
+    private fun getAccount(accountId: ObjectId): BankAccount =
+        accountRepository.findById(accountId)
+            .orElseThrow { NoSuchElementException("Bank account with id $accountId not found") }
 }

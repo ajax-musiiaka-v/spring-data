@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl(private val userRepository: UserRepository,
-                      private val addressRepository: AddressRepository) : UserService {
+                      private val addressRepository: AddressRepository
+                      ) : UserService {
 
     override fun createUser(userName: String, userEmail: String): User {
         val userAddress = createAddress()
@@ -28,6 +29,15 @@ class UserServiceImpl(private val userRepository: UserRepository,
         return savedUser
     }
 
+    override fun findById(userId: ObjectId): User? =
+        userRepository.findById(userId).get()
+
+    override fun updateUser(user: User): User =
+        userRepository.save(user)
+
+    override fun findByBankAccountId(bankAccountId: ObjectId): User? =
+        userRepository.findByBankAccountId(bankAccountId)
+
     override fun getAll(): Collection<User> =
         userRepository.findAll()
 
@@ -38,7 +48,6 @@ class UserServiceImpl(private val userRepository: UserRepository,
         }
         userRepository.deleteById(ObjectId(id))
     }
-
 
     override fun findByName(name: String): User? =
         userRepository.findByName(name)

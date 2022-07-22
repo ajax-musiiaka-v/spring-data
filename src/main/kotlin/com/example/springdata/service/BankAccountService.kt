@@ -8,7 +8,7 @@ interface BankAccountService {
 
     fun getAll(): Collection<BankAccount>
 
-    fun deleteAccount(bankAccountId: ObjectId)
+    fun deleteAccount(bankAccountId: String)
 
     fun deposit(accountId: ObjectId, depositAmount: Double): BankAccount
 

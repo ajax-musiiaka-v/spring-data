@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/services")
 class UserServiceController(private val userService: UserService) {
 
-
     @PostMapping("/users")
     fun createUser(@RequestBody request: CreateUserRequest): ResponseEntity<UserId> {
         val id: String = userService.createUser(request.name, request.email).id.toString()
@@ -32,6 +31,7 @@ class UserServiceController(private val userService: UserService) {
     @DeleteMapping("/users/{id}")
     fun delete(@PathVariable("id") id: String): ResponseEntity<Void> {
         userService.deleteUser(id)
+
         return ResponseEntity.ok().build()
     }
 }
