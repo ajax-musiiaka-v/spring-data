@@ -2,6 +2,7 @@ package com.example.springdata.entity
 
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
@@ -12,5 +13,6 @@ data class User(
     @Indexed(unique = true) internal var email: String,
     internal var addressId: ObjectId? = null,
     internal var enabled: Boolean? = null,
-    internal var bankAccountId: ObjectId? = null
+    internal var bankAccountId: ObjectId? = null,
+    @Version internal var version: Long? = null
 )

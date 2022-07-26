@@ -10,5 +10,5 @@ data class BankAccount (
     @Id internal val id: ObjectId? = null,
     internal var name: String = "default",
     internal var balance: Double = 0.0,
-    @Version internal var version: Long = 0
+    @Version internal var version: Long? = null
 )
