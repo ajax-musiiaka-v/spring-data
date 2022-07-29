@@ -20,18 +20,20 @@ repositories {
 dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
 
-	implementation("org.mongodb:mongodb-driver-sync:4.6.0")
-
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
-	implementation("org.flywaydb:flyway-core")
+	// Reactive
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("io.projectreactor:reactor-test")
 
 	testImplementation("org.testcontainers:testcontainers:1.17.2")
 	testImplementation("org.testcontainers:junit-jupiter:1.17.2")
 }
+
 
 tasks.withType<KotlinCompile> {
 	kotlinOptions {

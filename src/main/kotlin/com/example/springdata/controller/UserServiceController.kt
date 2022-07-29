@@ -7,6 +7,8 @@ import com.example.springdata.entity.User
 import com.example.springdata.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 
 @RestController
@@ -14,16 +16,17 @@ import org.springframework.web.bind.annotation.*
 class UserServiceController(private val userService: UserService) {
 
     @PostMapping("/users")
-    fun createUser(@RequestBody request: CreateUserRequest): ResponseEntity<UserId> {
-        val id: String = userService.createUser(request.name, request.email).id.toString()
+    fun createUser(@RequestBody request: CreateUserRequest): ResponseEntity<Mono<UserId>> {
+        val user: Mono<User> = userService.createUser(request.name, request.email)
+        val userId: Mono<UserId> = user.map { getUserId(it) }
 
-        return ResponseEntity.ok(UserId(id))
+        return ResponseEntity.ok(userId)
     }
 
     @GetMapping("/users")
-    fun getAll(): ResponseEntity<Collection<UserData>> {
-        val entities = userService.getAll()
-        val users: Collection<UserData> = entities.map { transform(it) }
+    fun getAll(): ResponseEntity<Flux<UserData>> {
+        val entities: Flux<User> = userService.getAll()
+        val users: Flux<UserData> = entities.map { transform(it) }
 
         return ResponseEntity.ok(users)
     }
@@ -36,7 +39,9 @@ class UserServiceController(private val userService: UserService) {
     }
 }
 
-private fun transform(entity: User): UserData {
-    return UserData(entity.id.toString(), entity.name, entity.email, entity.enabled)
-}
+private fun transform(entity: User): UserData =
+    UserData(entity.id.toString(), entity.name, entity.email, entity.enabled)
+
+
+private fun getUserId(entity: User): UserId = UserId(entity.id.toString())
 

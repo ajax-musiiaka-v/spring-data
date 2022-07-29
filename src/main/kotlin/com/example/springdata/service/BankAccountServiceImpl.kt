@@ -1,9 +1,12 @@
 package com.example.springdata.service
 
 import com.example.springdata.entity.BankAccount
+import com.example.springdata.entity.User
 import com.example.springdata.repository.BankAccountRepository
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.lang.UnsupportedOperationException
 
 @Service
@@ -11,75 +14,75 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
                              private val userService: UserService
                              ) : BankAccountService {
 
-    override fun getAll(): Collection<BankAccount> =
+    override fun getAll(): Flux<BankAccount> =
         accountRepository.findAll()
 
-    override fun createBankAccount(userId: ObjectId, accountName: String): BankAccount {
-        val user = userService.findById(userId) ?:
-                            throw NoSuchElementException("User with id $userId not found")
+    override fun createBankAccount(userId: ObjectId, accountName: String): Mono<BankAccount> {
 
-        val account = BankAccount(name = accountName)
-        val savedAccount = accountRepository.save(account)
+        var userMono: Mono<User> = userService.findById(userId)
 
-        user.bankAccountId = savedAccount.id
-        userService.updateUser(user)
+        val savedAccount: Mono<BankAccount> =
+            accountRepository.save(BankAccount(name = accountName))
+
+        userMono = userMono
+            .zipWith(savedAccount)
+            .flatMap { userService.updateUser(  // t1 refers to user. t2 to account
+                it.t1.apply {
+                    it.t1.bankAccountId = it.t2.id }
+            ) }
 
         return savedAccount
     }
 
-    override fun deleteAccount(bankAccountId: String) {
-        val objectId = ObjectId(bankAccountId)
-        val user = userService.findByBankAccountId(objectId) ?:
-                throw NoSuchElementException("User with bank account id $bankAccountId not found")
+    override fun deleteAccount(bankAccountId: String): Mono<Void> {
+        val objectId: ObjectId = ObjectId(bankAccountId)
 
-        user.bankAccountId = null
-        userService.updateUser(user)
-        accountRepository.deleteById(objectId)
+        userService.findByBankAccountId(objectId).flatMap {
+            userService.updateUser(
+                it.apply { it.bankAccountId = null }
+        ) }
+
+        return accountRepository.deleteById(objectId)
     }
 
     override fun deposit(accountId: ObjectId,
-                         depositAmount: Double): BankAccount{
+                         depositAmount: Double): Mono<BankAccount> {
         if (depositAmount < 0) throw UnsupportedOperationException("Negative deposit amount")
 
-        val account = getAccount(accountId)
-        account.balance += depositAmount
-
-        return accountRepository.save(account)
+        return getAccount(accountId).flatMap {
+            accountRepository.save(
+                it.apply { it.balance += depositAmount }
+            )
+        }
     }
 
     override fun withdraw(accountId: ObjectId,
-                          withdrawAmount: Double): BankAccount {
+                          withdrawAmount: Double): Mono<BankAccount> {
         if (withdrawAmount < 0)
             throw UnsupportedOperationException("Negative withdraw amount")
 
-        val account = getAccount(accountId)
-        if (account.balance < withdrawAmount)
-            throw UnsupportedOperationException("Withdraw amount less than account balance")
-
-        account.balance -= withdrawAmount
-
-        return accountRepository.save(account)
+        return getAccount(accountId).flatMap {
+            account ->
+                if (account.balance < withdrawAmount)
+                    throw UnsupportedOperationException("Withdraw amount less than account balance")
+                else accountRepository.save(
+                    account.apply { account.balance -= withdrawAmount }
+            )
+        }
     }
 
     override fun transfer(accountFromId: ObjectId,
                           transferAmount: Double,
-                          accountToId: ObjectId): List<BankAccount> {
+                          accountToId: ObjectId): Flux<BankAccount> {
         if (transferAmount < 0)
             throw UnsupportedOperationException("Negative transfer amount")
 
-        val accountFrom = getAccount(accountFromId)
-        if (accountFrom.balance < transferAmount)
-            throw  UnsupportedOperationException("Transfer amount less than account balance")
+        return Flux
+                .merge(withdraw(accountFromId, transferAmount), deposit(accountToId, transferAmount))
 
-        val accountTo = getAccount(accountToId)
-
-        accountFrom.balance -= transferAmount
-        accountTo.balance += transferAmount
-
-        return accountRepository.saveAll(listOf(accountFrom, accountTo))
     }
 
-    private fun getAccount(accountId: ObjectId): BankAccount =
+    private fun getAccount(accountId: ObjectId): Mono<BankAccount> =
         accountRepository.findById(accountId)
-            .orElseThrow { NoSuchElementException("Bank account with id $accountId not found") }
+
 }

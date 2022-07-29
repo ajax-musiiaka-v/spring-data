@@ -3,57 +3,63 @@ package com.example.springdata.service
 import com.example.springdata.entity.Address
 import com.example.springdata.entity.User
 import com.example.springdata.repository.AddressRepository
-import com.example.springdata.repository.BankAccountRepository
 import com.example.springdata.repository.UserRepository
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Service
 class UserServiceImpl(private val userRepository: UserRepository,
                       private val addressRepository: AddressRepository
                       ) : UserService {
 
-    override fun createUser(userName: String, userEmail: String): User {
-        val userAddress = createAddress()
-        val savedAddress = addressRepository.save(userAddress)
+    override fun createUser(userName: String, userEmail: String): Mono<User> {
+        val userAddress: Address = createAddress()
+        val savedAddress: Mono<Address> = addressRepository.save(userAddress)
 
-        val user = User(
+        return savedAddress.flatMap { userRepository.save(
+            User(
                 name = userName,
                 email = userEmail,
-                addressId = savedAddress.id,
+                addressId = it.id,
                 enabled = true
             )
-
-        val savedUser = userRepository.save(user)
-
-        return savedUser
+        ) }
     }
 
-    override fun findById(userId: ObjectId): User? =
-        userRepository.findById(userId).get()
+     override fun findById(userId: ObjectId): Mono<User> =
+         userRepository.findById(userId)
+            .switchIfEmpty(Mono.error(NoSuchElementException()))
 
-    override fun updateUser(user: User): User =
+    override fun updateUser(user: User): Mono<User> =
         userRepository.save(user)
 
-    override fun findByBankAccountId(bankAccountId: ObjectId): User? =
+    override fun findByBankAccountId(bankAccountId: ObjectId): Mono<User> =
         userRepository.findByBankAccountId(bankAccountId)
+            .switchIfEmpty(Mono.error(NoSuchElementException()))
 
-    override fun getAll(): Collection<User> =
+    override fun getAll(): Flux<User> =
         userRepository.findAll()
 
-    override fun deleteUser(id: String) {
-        val addressId = userRepository.findById(ObjectId(id)).get().addressId
-        if (addressId != null) {
-            addressRepository.deleteById(addressId)
-        }
-        userRepository.deleteById(ObjectId(id))
+    override fun deleteUser(userId: String): Mono<Void> {
+        val userFound: Mono<User> = userRepository.findById(ObjectId(userId))
+
+        // delete user's address
+        userFound
+            .flatMap { user -> user.addressId?.let { addressRepository.deleteById(it) } }
+
+        // delete user
+        return userRepository.deleteById(ObjectId(userId))
     }
 
-    override fun findByName(name: String): User? =
+    override fun findByName(name: String): Mono<User> =
         userRepository.findByName(name)
+            .switchIfEmpty(Mono.error(NoSuchElementException()))
 
-    override fun findByEmail(email: String): User? =
+    override fun findByEmail(email: String): Mono<User> =
         userRepository.findByEmail(email)
+            .switchIfEmpty(Mono.error(NoSuchElementException()))
 
     private fun createAddress(): Address =
         Address(
