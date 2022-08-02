@@ -14,34 +14,35 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/services")
-class BankAccountServiceController(private val bankAccountService: BankAccountService,
-                                   private val userService: UserService) {
+class BankAccountServiceController(
+    private val bankAccountService: BankAccountService,
+    private val userService: UserService
+) {
 
     @PostMapping("/accounts")
     fun createAccount(@RequestBody request: CreateBankAccountRequest)
-                                        : ResponseEntity<Mono<BankAccountId>> {
+            : Mono<ResponseEntity<BankAccountId>> {
 
-        val bankAccount: Mono<BankAccount> = bankAccountService
+        return bankAccountService
             .createBankAccount(ObjectId(request.userId), request.name)
-        val accountId: Mono <BankAccountId> = bankAccount.map { getAccountId(it) }
-
-        return ResponseEntity.ok(accountId)
+            .map { ResponseEntity.ok(getAccountId(it)) }
     }
 
     @GetMapping("/accounts")
-    fun getAll(): ResponseEntity<Flux<BankAccountData>> {
-        val entities: Flux<BankAccount> = bankAccountService.getAll()
-        val bankAccounts: Flux<BankAccountData> = entities.map { transform(it) }
+    fun getAll(): Flux<ResponseEntity<BankAccountData>> {
 
-        return ResponseEntity.ok(bankAccounts)
+        return bankAccountService
+            .getAll()
+            .map { ResponseEntity.ok(transform(it)) }
 
     }
 
     @DeleteMapping("/accounts/{id}")
-    fun delete(@PathVariable("id") id: String): ResponseEntity<Void> {
-        bankAccountService.deleteAccount(id)
+    fun delete(@PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
 
-        return ResponseEntity.ok().build()
+        return bankAccountService
+            .deleteAccount(id)
+            .map { ResponseEntity.ok().build() }
     }
 }
 

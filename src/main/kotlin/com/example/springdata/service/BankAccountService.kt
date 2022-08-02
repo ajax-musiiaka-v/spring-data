@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono
 interface BankAccountService {
     fun createBankAccount(userId: ObjectId, accountName: String = "default"): Mono<BankAccount>
 
+    fun findById(accountId: ObjectId): Mono<BankAccount>
+
     fun getAll(): Flux<BankAccount>
 
     fun deleteAccount(bankAccountId: String): Mono <Void>

@@ -110,35 +110,35 @@ class UserServiceTest {
     @Test
     fun findUserByName() {
         // Given
-        userService.createUser(name, email)
+        userService.createUser(name, email).block()
 
         // When
         val userByName = userService.findByName(name)
 
         // Then
-        userByName.subscribe { result ->
-            run {
-                assertNotNull(result)
-                assertEquals(name, result.name)
-            }
-        }
+        StepVerifier.create(userByName)
+            .assertNext { user -> run {
+                assertNotNull(user)
+                assertEquals(name, user.name)
+            } }
+            .verifyComplete()
     }
 
     @Test
     fun findUserByEmail() {
         // Given
-        userService.createUser(name, email)
+        userService.createUser(name, email).block()
 
         // When
         val userByEmail = userService.findByEmail(email)
 
         // Then
-        userByEmail.subscribe { result ->
-            run {
-                assertNotNull(result)
-                assertEquals(email, result.email)
-            }
-        }
+        StepVerifier.create(userByEmail)
+            .assertNext { user -> run {
+                assertNotNull(user)
+                assertEquals(email, user.email)
+            } }
+            .verifyComplete()
     }
 
     @Test
@@ -147,7 +147,7 @@ class UserServiceTest {
         val userMono = userService.createUser(name, email)
         val userId: String = userMono.block()?.id.toString()
 
-        // When (delete user)
+        // When
         val deletedUser: Mono<Void> = userService.deleteUser(userId)
 
         // Then

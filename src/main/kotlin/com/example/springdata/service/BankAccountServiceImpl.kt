@@ -1,7 +1,6 @@
 package com.example.springdata.service
 
 import com.example.springdata.entity.BankAccount
-import com.example.springdata.entity.User
 import com.example.springdata.repository.BankAccountRepository
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
@@ -19,54 +18,54 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
 
     override fun createBankAccount(userId: ObjectId, accountName: String): Mono<BankAccount> {
 
-        var userMono: Mono<User> = userService.findById(userId)
-
-        val savedAccount: Mono<BankAccount> =
-            accountRepository.save(BankAccount(name = accountName))
-
-        userMono = userMono
-            .zipWith(savedAccount)
-            .flatMap { userService.updateUser(  // t1 refers to user. t2 to account
-                it.t1.apply {
-                    it.t1.bankAccountId = it.t2.id }
-            ) }
-
-        return savedAccount
+        return accountRepository
+            .save(BankAccount(name = accountName))
+            .zipWith(userService.findById(userId))
+            .flatMap {      // it.t1 - bankAccount, it.t2 - user
+                userService
+                    .updateUser(it.t2.copy(bankAccountId = it.t1.id))
+                    .then(Mono.just(it.t1))
+            }
     }
 
     override fun deleteAccount(bankAccountId: String): Mono<Void> {
-        val objectId: ObjectId = ObjectId(bankAccountId)
+        val objectId = ObjectId(bankAccountId)
 
-        userService.findByBankAccountId(objectId).flatMap {
-            userService.updateUser(
-                it.apply { it.bankAccountId = null }
-        ) }
-
-        return accountRepository.deleteById(objectId)
+        return accountRepository
+            .deleteById(objectId)
+            .switchIfEmpty(userService.findByBankAccountId(objectId)
+                .flatMap {
+                    userService
+                        .updateUser(it.copy(bankAccountId = null))
+                        .then(Mono.empty())
+                })
     }
 
     override fun deposit(accountId: ObjectId,
                          depositAmount: Double): Mono<BankAccount> {
-        if (depositAmount < 0) throw UnsupportedOperationException("Negative deposit amount")
+        if (depositAmount < 0) {
+            return Mono.error(UnsupportedOperationException("Negative deposit amount"))
+        }
 
-        return getAccount(accountId).flatMap {
+        return findById(accountId).flatMap {
             accountRepository.save(
-                it.apply { it.balance += depositAmount }
+                it.copy(balance = it.balance + depositAmount)
             )
         }
     }
 
     override fun withdraw(accountId: ObjectId,
                           withdrawAmount: Double): Mono<BankAccount> {
-        if (withdrawAmount < 0)
-            throw UnsupportedOperationException("Negative withdraw amount")
+        if (withdrawAmount < 0) {
+            return Mono.error(UnsupportedOperationException("Negative withdraw amount"))
+        }
 
-        return getAccount(accountId).flatMap {
+        return findById(accountId).flatMap {
             account ->
                 if (account.balance < withdrawAmount)
-                    throw UnsupportedOperationException("Withdraw amount less than account balance")
+                    Mono.error(UnsupportedOperationException("Withdraw amount less than account balance"))
                 else accountRepository.save(
-                    account.apply { account.balance -= withdrawAmount }
+                    account.copy(balance = account.balance - withdrawAmount)
             )
         }
     }
@@ -77,12 +76,11 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
         if (transferAmount < 0)
             throw UnsupportedOperationException("Negative transfer amount")
 
-        return Flux
-                .merge(withdraw(accountFromId, transferAmount), deposit(accountToId, transferAmount))
-
+        return Flux.concat(withdraw(accountFromId, transferAmount),
+                           deposit(accountToId, transferAmount))
     }
 
-    private fun getAccount(accountId: ObjectId): Mono<BankAccount> =
+    override fun findById(accountId: ObjectId): Mono<BankAccount> =
         accountRepository.findById(accountId)
-
+            .switchIfEmpty(Mono.error(NoSuchElementException()))
 }

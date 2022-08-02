@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext
 
-
 @SpringBootApplication
 class SpringDataApp {
 	private val LOG: Logger = LoggerFactory.getLogger(SpringDataApp::class.java)

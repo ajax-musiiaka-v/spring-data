@@ -16,32 +16,27 @@ import reactor.core.publisher.Mono
 class UserServiceController(private val userService: UserService) {
 
     @PostMapping("/users")
-    fun createUser(@RequestBody request: CreateUserRequest): ResponseEntity<Mono<UserId>> {
-        val user: Mono<User> = userService.createUser(request.name, request.email)
-        val userId: Mono<UserId> = user.map { getUserId(it) }
+    fun createUser(@RequestBody request: CreateUserRequest): Mono<ResponseEntity<UserId>> {
 
-        return ResponseEntity.ok(userId)
+        return userService.createUser(request.name, request.email).map { ResponseEntity.ok(getUserId(it)) }
     }
 
     @GetMapping("/users")
-    fun getAll(): ResponseEntity<Flux<UserData>> {
-        val entities: Flux<User> = userService.getAll()
-        val users: Flux<UserData> = entities.map { transform(it) }
+    fun getAll(): Flux<ResponseEntity<UserData>> {
 
-        return ResponseEntity.ok(users)
+        return userService.getAll().map { ResponseEntity.ok(transform(it)) }
     }
 
     @DeleteMapping("/users/{id}")
-    fun delete(@PathVariable("id") id: String): ResponseEntity<Void> {
-        userService.deleteUser(id)
+    fun delete(@PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
 
-        return ResponseEntity.ok().build()
+        return userService.deleteUser(id).map { ResponseEntity.ok().build() }
     }
 }
 
 private fun transform(entity: User): UserData =
     UserData(entity.id.toString(), entity.name, entity.email, entity.enabled)
 
-
 private fun getUserId(entity: User): UserId = UserId(entity.id.toString())
+
 
