@@ -16,12 +16,14 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
+import org.springframework.test.context.ActiveProfiles
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 import java.lang.UnsupportedOperationException
 
 
 @SpringBootTest
+@ActiveProfiles("test")
 class BankAccountServiceTest {
     @Autowired
     lateinit var userService: UserService
@@ -78,7 +80,7 @@ class BankAccountServiceTest {
                 run {
                     assertNotNull(account)
                     assertNotNull(account.id)
-                    assertEquals("default", account.name)
+                    assertEquals("default", account.bankAccountName)
                     assertEquals(0.0, account.balance)
                     accountId = account.id
                 }
@@ -105,7 +107,7 @@ class BankAccountServiceTest {
                 run {
                     assertNotNull(account)
                     assertNotNull(account.id)
-                    assertEquals(accountName, account.name)
+                    assertEquals(accountName, account.bankAccountName)
                     assertEquals(0.0, account.balance)
                 }
             }
@@ -124,13 +126,13 @@ class BankAccountServiceTest {
         StepVerifier.create(bankAccountMono)
             .expectError(NoSuchElementException::class.java)
             .verify()
+    println()
     }
 
     @Test
     fun deleteBankAccount() {
         // Given
         val userId = createUserGetId()
-//        val bankAccountMono = bankAccountService.createBankAccount(userId)
         val accountId = createAccountGetId(userId).toString()
 
         // When

@@ -5,5 +5,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class CreateBankAccountRequest @JsonCreator constructor(
     @param:JsonProperty("userId") val userId: String,
-    @param:JsonProperty("name") val name: String
+    @param:JsonProperty("bankAccountName") val name: String
 )

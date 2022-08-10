@@ -1,0 +1,85 @@
+syntax = "proto3";
+package com.example.springdata;
+option java_outer_classname = "SpringData";
+option java_multiple_files = true;
+
+message UserInfoRequest {
+  string userId = 1;
+}
+
+message UserInfoResponse {
+  string userId = 1;
+  string name = 2;
+  string email = 3;
+  string addressId = 4;
+  bool enabled = 5;
+  string bankAccountId = 6;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}
+
+message CreateUserResponse {
+  string userId = 1;
+}
+
+message DeleteUserRequest {
+  string userId = 1;
+}
+
+message DeleteUserResponse {}
+
+message GetAllUsersRequest {}
+
+message GetAllUsersResponse {
+  repeated UserInfoResponse users = 1;
+}
+
+message BankAccountInfoRequest {
+  string bankAccountId = 1;
+}
+
+message BankAccountInfoResponse {
+  string bankAccountId = 1;
+  string bankAccountName = 2;
+  double balance = 3;
+}
+
+message CreateBankAccountRequest {
+  string userId = 1;
+  string bankAccountName = 2;
+}
+
+message CreateBankAccountResponse {
+  string bankAccountId = 1;
+}
+
+message GetAllBankAccountsRequest {}
+
+message GetAllBankAccountsResponse {
+  repeated BankAccountInfoResponse bankAccounts = 1;
+}
+
+message DeleteBankAccountRequest {
+  string bankAccountId = 1;
+}
+
+message DeleteBankAccountResponse {}
+
+service UserService {
+  rpc createUser(CreateUserRequest) returns (CreateUserResponse);
+
+  rpc getAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
+
+  rpc deleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+service BankAccountService {
+  rpc createBankAccount(CreateBankAccountRequest) returns (CreateBankAccountResponse);
+
+  rpc getAllBankAccounts(GetAllBankAccountsRequest) returns (GetAllBankAccountsResponse);
+
+  rpc deleteBankAccount(DeleteBankAccountRequest) returns (DeleteBankAccountResponse);
+}

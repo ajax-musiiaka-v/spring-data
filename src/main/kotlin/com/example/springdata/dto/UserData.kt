@@ -8,4 +8,5 @@ data class UserData @JsonCreator constructor(
     @param:JsonProperty("name") val name: String,
     @param:JsonProperty("email") val email: String,
     @param:JsonProperty("enabled") val enabled: Boolean?
+    // TODO add address and bank account
 )

@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "bank_accounts")
 data class BankAccount (
     @Id internal val id: ObjectId? = null,
-    internal var name: String = "default",
+    internal var bankAccountName: String = "default",
     internal var balance: Double = 0.0,
     @Version internal var version: Long? = null
 )

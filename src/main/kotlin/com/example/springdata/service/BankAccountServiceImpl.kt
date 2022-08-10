@@ -6,7 +6,6 @@ import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.lang.UnsupportedOperationException
 
 @Service
 class BankAccountServiceImpl(private val accountRepository: BankAccountRepository,
@@ -19,7 +18,7 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
     override fun createBankAccount(userId: ObjectId, accountName: String): Mono<BankAccount> {
 
         return accountRepository
-            .save(BankAccount(name = accountName))
+            .save(BankAccount(bankAccountName = accountName))
             .zipWith(userService.findById(userId))
             .flatMap {      // it.t1 - bankAccount, it.t2 - user
                 userService

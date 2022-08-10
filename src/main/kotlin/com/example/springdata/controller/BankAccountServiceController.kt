@@ -20,7 +20,7 @@ class BankAccountServiceController(
 ) {
 
     @PostMapping("/accounts")
-    fun createAccount(@RequestBody request: CreateBankAccountRequest)
+    fun createBankAccount(@RequestBody request: CreateBankAccountRequest)
             : Mono<ResponseEntity<BankAccountId>> {
 
         return bankAccountService
@@ -29,7 +29,7 @@ class BankAccountServiceController(
     }
 
     @GetMapping("/accounts")
-    fun getAll(): Flux<ResponseEntity<BankAccountData>> {
+    fun getAllBankAccounts(): Flux<ResponseEntity<BankAccountData>> {
 
         return bankAccountService
             .getAll()
@@ -38,7 +38,7 @@ class BankAccountServiceController(
     }
 
     @DeleteMapping("/accounts/{id}")
-    fun delete(@PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
+    fun deleteBankAccount(@PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
 
         return bankAccountService
             .deleteAccount(id)
@@ -47,7 +47,7 @@ class BankAccountServiceController(
 }
 
 private fun transform(entity: BankAccount): BankAccountData =
-    BankAccountData(entity.id.toString(), entity.name, entity.balance)
+    BankAccountData(entity.id.toString(), entity.bankAccountName, entity.balance)
 
 private fun getAccountId(entity: BankAccount): BankAccountId =
     BankAccountId(entity.id.toString())

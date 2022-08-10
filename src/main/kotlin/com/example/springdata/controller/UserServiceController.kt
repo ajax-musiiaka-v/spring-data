@@ -22,13 +22,13 @@ class UserServiceController(private val userService: UserService) {
     }
 
     @GetMapping("/users")
-    fun getAll(): Flux<ResponseEntity<UserData>> {
+    fun getAllUsers(): Flux<ResponseEntity<UserData>> {
 
         return userService.getAll().map { ResponseEntity.ok(transform(it)) }
     }
 
     @DeleteMapping("/users/{id}")
-    fun delete(@PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
+    fun deleteUser(@PathVariable("id") id: String): Mono<ResponseEntity<Void>> {
 
         return userService.deleteUser(id).map { ResponseEntity.ok().build() }
     }
