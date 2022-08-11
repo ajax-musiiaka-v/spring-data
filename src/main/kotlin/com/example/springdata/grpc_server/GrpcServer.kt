@@ -1,7 +1,7 @@
 package com.example.springdata.grpc_server
 
-import com.example.springdata.grpc_service.BankAccountGrpcService
-import com.example.springdata.grpc_service.UserGrpcService
+import com.example.springdata.reactive_grpc_service.ReactiveBankAccountGrpcService
+import com.example.springdata.reactive_grpc_service.ReactiveUserGrpcService
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import org.slf4j.Logger
@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
-class GrpcServer(private val userGrpcService: UserGrpcService,
-                 private val bankAccountGrpcService: BankAccountGrpcService
+class GrpcServer(private val reactiveUserGrpcService: ReactiveUserGrpcService,
+                 private val reactiveBankAccountGrpcService: ReactiveBankAccountGrpcService
 ) {
 
     @Value("\${grpc.port}")
@@ -24,8 +24,8 @@ class GrpcServer(private val userGrpcService: UserGrpcService,
     fun start() {
         server = ServerBuilder
             .forPort(port.toInt())
-            .addService(userGrpcService)
-            .addService(bankAccountGrpcService)
+            .addService(reactiveUserGrpcService)
+            .addService(reactiveBankAccountGrpcService)
             .build().start()
 
         LOG.info("~~~~ *** gRPC server started on port: $port. *** ~~~~")

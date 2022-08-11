@@ -9,6 +9,7 @@ plugins {
 	kotlin("jvm") version "1.6.21"
 	kotlin("plugin.spring") version "1.6.21"
 	id("com.google.protobuf") version "0.8.19"
+	idea
 }
 
 group = "com.example"
@@ -29,8 +30,8 @@ buildscript {
 }
 
 dependencies {
-	val grpcVersion = "1.47.0"
-	val protobufJavaVersion = "3.21.3"
+	val grpcVersion = "1.48.0"
+	val protobufJavaVersion = "3.21.4"
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
 
@@ -54,6 +55,11 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 
+	// Reactive-grpc
+	implementation("com.salesforce.servicelibs:reactor-grpc:1.2.3")
+	implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.3")
+	implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.3")
+
 	testImplementation("org.testcontainers:testcontainers:1.17.2")
 	testImplementation("org.testcontainers:junit-jupiter:1.17.2")
 }
@@ -74,34 +80,25 @@ tasks.withType<Test> {
 	}
 }
 
-sourceSets {
-	main {
-		java {
-			srcDir( "build/generated/source/proto/main/java")
-			srcDir("build/generated/source/proto/main/grpc")
-		}
-	}
-	// TODO Add srcDir for tests when they will be written
-}
-
 protobuf {
 	protoc {
 		artifact = "com.google.protobuf:protoc:3.14.0"
 	}
 
-//	generatedFilesBaseDir = "$projectDir/src/main/kotlin/com.example.springdata/generated"
-
 	plugins {
 		id("grpc") {
 			artifact = "io.grpc:protoc-gen-grpc-java:1.48.1"
+		}
+		id("reactor") {
+			artifact = "com.salesforce.servicelibs:reactor-grpc:1.2.3"
 		}
 	}
 
 	generateProtoTasks {
 		ofSourceSet("main").forEach {
 			it.plugins {
-				// Apply the "grpc" plugin whose spec is defined above, without options.
 				id("grpc")
+				id("reactor")
 			}
 		}
 	}
