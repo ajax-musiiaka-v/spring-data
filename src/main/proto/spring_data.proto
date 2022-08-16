@@ -81,5 +81,7 @@ service BankAccountService {
 
   rpc getAllBankAccounts(GetAllBankAccountsRequest) returns (GetAllBankAccountsResponse);
 
+  rpc streamAllBankAccounts(GetAllBankAccountsRequest) returns (stream BankAccountInfoResponse);
+
   rpc deleteBankAccount(DeleteBankAccountRequest) returns (DeleteBankAccountResponse);
 }

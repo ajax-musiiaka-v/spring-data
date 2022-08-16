@@ -32,6 +32,7 @@ buildscript {
 dependencies {
 	val grpcVersion = "1.48.0"
 	val protobufJavaVersion = "3.21.4"
+	val reactiveGrpc = "1.2.3"
 
 	implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
 
@@ -52,13 +53,16 @@ dependencies {
 	implementation("javax.annotation:javax.annotation-api:1.3.2")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+	// Reactive gRPC
+	implementation("com.salesforce.servicelibs:reactor-grpc:$reactiveGrpc")
+	implementation("com.salesforce.servicelibs:reactive-grpc-common:$reactiveGrpc")
+	implementation("com.salesforce.servicelibs:reactor-grpc-stub:$reactiveGrpc")
+
+	// NATS client
+	implementation("io.nats:jnats:2.15.6")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
-
-	// Reactive-grpc
-	implementation("com.salesforce.servicelibs:reactor-grpc:1.2.3")
-	implementation("com.salesforce.servicelibs:reactive-grpc-common:1.2.3")
-	implementation("com.salesforce.servicelibs:reactor-grpc-stub:1.2.3")
 
 	testImplementation("org.testcontainers:testcontainers:1.17.2")
 	testImplementation("org.testcontainers:junit-jupiter:1.17.2")

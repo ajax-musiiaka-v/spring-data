@@ -44,6 +44,17 @@ class ReactiveBankAccountGrpcService(private val bankAccountService: BankAccount
             }
     }
 
+    override fun streamAllBankAccounts(request: Mono<GetAllBankAccountsRequest>?): Flux<BankAccountInfoResponse> {
+        return bankAccountService.getAll().map {
+            BankAccountInfoResponse
+                .newBuilder()
+                .setBankAccountId(it.id.toString())
+                .setBankAccountName(it.bankAccountName)
+                .setBalance(it.balance)
+                .build()
+        }
+    }
+
     override fun deleteBankAccount(request: Mono<DeleteBankAccountRequest>?): Mono<DeleteBankAccountResponse> {
         val deletedMono: Mono<Void> = request?.flatMap {
             bankAccountService.deleteAccount(it.bankAccountId.toString())

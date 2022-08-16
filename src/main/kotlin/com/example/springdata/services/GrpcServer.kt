@@ -1,5 +1,6 @@
-package com.example.springdata.grpc_server
+package com.example.springdata.services
 
+import com.example.springdata.BankAccountInfoResponse
 import com.example.springdata.reactive_grpc_service.ReactiveBankAccountGrpcService
 import com.example.springdata.reactive_grpc_service.ReactiveUserGrpcService
 import io.grpc.Server
@@ -28,15 +29,15 @@ class GrpcServer(private val reactiveUserGrpcService: ReactiveUserGrpcService,
             .addService(reactiveBankAccountGrpcService)
             .build().start()
 
-        LOG.info("~~~~ *** gRPC server started on port: $port. *** ~~~~")
+        LOG.info("gRPC server started on port: $port.")
         LOG.info("Following Services available:")
         server.services.forEach { LOG.info("Service Name: ${it.serviceDescriptor.name}") }
 
         Runtime.getRuntime().addShutdownHook(
             Thread {
-                LOG.info("*** Shutting down gRPC server since JVM is shutting down.")
+                LOG.info("Shutting down gRPC server since JVM is shutting down.")
                 this@GrpcServer.stop()
-                LOG.info("~~~~ *** Server shut down. *** ~~~~")
+                LOG.info("Server shut down.")
             }
         )
     }
