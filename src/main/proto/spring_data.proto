@@ -45,6 +45,7 @@ message BankAccountInfoResponse {
   string bankAccountId = 1;
   string bankAccountName = 2;
   double balance = 3;
+  int64 version = 4;
 }
 
 message CreateBankAccountRequest {
@@ -68,6 +69,11 @@ message DeleteBankAccountRequest {
 
 message DeleteBankAccountResponse {}
 
+message DepositBankAccountRequest {
+  string bankAccountId = 1;
+  double amount = 2;
+}
+
 service UserService {
   rpc createUser(CreateUserRequest) returns (CreateUserResponse);
 
@@ -78,6 +84,8 @@ service UserService {
 
 service BankAccountService {
   rpc createBankAccount(CreateBankAccountRequest) returns (CreateBankAccountResponse);
+
+  rpc depositBankAccount(DepositBankAccountRequest) returns (BankAccountInfoResponse);
 
   rpc getAllBankAccounts(GetAllBankAccountsRequest) returns (GetAllBankAccountsResponse);
 

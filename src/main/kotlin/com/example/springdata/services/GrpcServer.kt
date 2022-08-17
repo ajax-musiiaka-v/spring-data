@@ -1,6 +1,5 @@
 package com.example.springdata.services
 
-import com.example.springdata.BankAccountInfoResponse
 import com.example.springdata.reactive_grpc_service.ReactiveBankAccountGrpcService
 import com.example.springdata.reactive_grpc_service.ReactiveUserGrpcService
 import io.grpc.Server

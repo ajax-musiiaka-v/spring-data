@@ -2,6 +2,7 @@ package com.example.springdata.service
 
 import com.example.springdata.entity.BankAccount
 import com.example.springdata.repository.BankAccountRepository
+import com.example.springdata.services.NatsClient
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -9,7 +10,8 @@ import reactor.core.publisher.Mono
 
 @Service
 class BankAccountServiceImpl(private val accountRepository: BankAccountRepository,
-                             private val userService: UserService
+                             private val userService: UserService,
+                             private val natsClient: NatsClient
                              ) : BankAccountService {
 
     override fun getAll(): Flux<BankAccount> =
@@ -25,6 +27,10 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
                     .updateUser(it.t2.copy(bankAccountId = it.t1.id))
                     .then(Mono.just(it.t1))
             }
+            .doOnSuccess {
+                natsClient.connection
+                    .publish(natsClient.updateSubject, natsClient.accountToByteArray(it))
+            }
     }
 
     override fun deleteAccount(bankAccountId: String): Mono<Void> {
@@ -38,6 +44,10 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
                         .updateUser(it.copy(bankAccountId = null))
                         .then(Mono.empty())
                 })
+            .doOnSuccess {
+                natsClient.connection
+                    .publish(natsClient.deleteSubject, "id=\"$bankAccountId\" deleted".toByteArray())
+            }
     }
 
     override fun deposit(accountId: ObjectId,
@@ -49,8 +59,11 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
         return findById(accountId).flatMap {
             accountRepository.save(
                 it.copy(balance = it.balance + depositAmount)
-            )
-        }
+            ) }
+            .doOnSuccess {
+                natsClient.connection
+                    .publish(natsClient.updateSubject, natsClient.accountToByteArray(it))
+            }
     }
 
     override fun withdraw(accountId: ObjectId,
@@ -65,8 +78,11 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
                     Mono.error(UnsupportedOperationException("Withdraw amount less than account balance"))
                 else accountRepository.save(
                     account.copy(balance = account.balance - withdrawAmount)
-            )
-        }
+            ) }
+            .doOnSuccess {
+                natsClient.connection
+                    .publish(natsClient.updateSubject, natsClient.accountToByteArray(it))
+            }
     }
 
     override fun transfer(accountFromId: ObjectId,
@@ -77,6 +93,7 @@ class BankAccountServiceImpl(private val accountRepository: BankAccountRepositor
 
         return Flux.concat(withdraw(accountFromId, transferAmount),
                            deposit(accountToId, transferAmount))
+        // publishing to NATS is done for each account separately from withdraw / deposit method
     }
 
     override fun findById(accountId: ObjectId): Mono<BankAccount> =

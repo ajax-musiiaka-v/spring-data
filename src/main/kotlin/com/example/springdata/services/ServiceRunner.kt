@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component
 @Component
 class ServiceRunner(
     val grpcServer: GrpcServer,
-    val natsClient: NatsClient) : CommandLineRunner {
+    val natsClient: NatsClient
+    ) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
         grpcServer.start()

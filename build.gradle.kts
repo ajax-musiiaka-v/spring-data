@@ -61,6 +61,9 @@ dependencies {
 	// NATS client
 	implementation("io.nats:jnats:2.15.6")
 
+	// Gson
+	implementation("com.google.code.gson:gson:2.9.0")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 
