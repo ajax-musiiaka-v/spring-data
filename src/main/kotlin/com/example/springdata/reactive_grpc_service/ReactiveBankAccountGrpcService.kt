@@ -2,11 +2,11 @@ package com.example.springdata.reactive_grpc_service
 
 import com.example.springdata.*
 import com.example.springdata.ReactorBankAccountServiceGrpc.BankAccountServiceImplBase
-import com.example.springdata.entity.BankAccount
 import com.example.springdata.service.BankAccountService
 import com.example.springdata.services.NatsClient
 import io.nats.client.Message
 import org.bson.types.ObjectId
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -27,9 +27,10 @@ class ReactiveBankAccountGrpcService(private val bankAccountService: BankAccount
         }
     }
 
+    @Cacheable("bank_accounts")
     override fun getAllBankAccounts(request: Mono<GetAllBankAccountsRequest>?): Mono<GetAllBankAccountsResponse> {
         val allAccounts: Flux<BankAccountInfoResponse> = bankAccountService.getAll().map {
-            buildInfoResponse(it)
+            natsClient.bankAccountToProtobuf(it)
         }
 
         val listMono: Mono<MutableList<BankAccountInfoResponse>> = allAccounts.collectList()
@@ -45,23 +46,18 @@ class ReactiveBankAccountGrpcService(private val bankAccountService: BankAccount
 
     override fun streamAllBankAccounts(request: Mono<GetAllBankAccountsRequest>?): Flux<BankAccountInfoResponse> {
         val dbResponse = bankAccountService.getAll().map {
-            buildInfoResponse(it)
+            natsClient.bankAccountToProtobuf(it)
         }
 
-        val natsResponse = Flux.create<BankAccountInfoResponse> {
-            sink ->
-                run {
-                    natsClient.connection.createDispatcher { message -> sink.next(parseNatsResponse(message))
-                    }.subscribe(natsClient.updateSubject)
+        val natsResponse = Flux.create<BankAccountInfoResponse> { sink ->
+            run {
+                natsClient.connection.createDispatcher { message -> sink.next(natsClient.natsMessageToProtobuf(message)) }
+                    .subscribe(natsClient.updateSubject)
             }
         }
 
         return Flux.merge(dbResponse, natsResponse)
-
     }
-
-    private fun parseNatsResponse(message: Message): BankAccountInfoResponse =
-        natsClient.natsMessageToBankAccountInfoResponse(message)
 
     override fun deleteBankAccount(request: Mono<DeleteBankAccountRequest>?): Mono<DeleteBankAccountResponse> {
         val deletedMono: Mono<Void> = request?.flatMap {
@@ -80,16 +76,7 @@ class ReactiveBankAccountGrpcService(private val bankAccountService: BankAccount
             bankAccountService.deposit(ObjectId(it.bankAccountId), it.amount)
         }!!
         return accountMono.map {
-            buildInfoResponse(it)
+            natsClient.bankAccountToProtobuf(it)
         }
     }
-
-    private fun buildInfoResponse(account: BankAccount): BankAccountInfoResponse =
-        BankAccountInfoResponse
-            .newBuilder()
-            .setBankAccountId(account.id.toString())
-            .setBankAccountName(account.bankAccountName)
-            .setBalance(account.balance)
-            .setVersion(account.version!!)
-            .build()
 }

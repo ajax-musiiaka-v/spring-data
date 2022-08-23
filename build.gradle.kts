@@ -42,6 +42,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 
+	// Spring Boot Starter Data Redis Reactive
+	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive:2.7.3")
+	implementation("org.springframework.boot:spring-boot-starter-cache:2.7.3")
+
 	// gRPC
 	implementation("io.grpc:grpc-netty:$grpcVersion")
 	implementation("io.grpc:grpc-stub:$grpcVersion")
@@ -60,9 +64,6 @@ dependencies {
 
 	// NATS client
 	implementation("io.nats:jnats:2.15.6")
-
-	// Gson
-	implementation("com.google.code.gson:gson:2.9.0")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")

@@ -22,7 +22,6 @@ class UserServiceImpl(private val userRepository: UserRepository,
             User(
                 name = userName,
                 email = userEmail,
-                addressId = it.id,
                 enabled = true
             )
         ) }
@@ -45,12 +44,13 @@ class UserServiceImpl(private val userRepository: UserRepository,
     override fun deleteUser(userId: String): Mono<Void> {
         val userFound: Mono<User> = userRepository.findById(ObjectId(userId))
 
-        // delete user's address
-        userFound
-            .flatMap { user -> user.addressId?.let { addressRepository.deleteById(it) } }
-
-        // delete user
-        return userRepository.deleteById(ObjectId(userId))
+        return userFound
+            .flatMap { user ->
+                user.addressId?.let { addressRepository.deleteById(it) } // delete user's address
+            }
+            .then(
+                userRepository.deleteById(ObjectId(userId)) // delete user
+            )
     }
 
     override fun findByName(name: String): Mono<User> =
