@@ -85,6 +85,8 @@ service UserService {
 service BankAccountService {
   rpc createBankAccount(CreateBankAccountRequest) returns (CreateBankAccountResponse);
 
+  rpc findBankAccountById(BankAccountInfoRequest) returns (BankAccountInfoResponse);
+
   rpc depositBankAccount(DepositBankAccountRequest) returns (BankAccountInfoResponse);
 
   rpc getAllBankAccounts(GetAllBankAccountsRequest) returns (GetAllBankAccountsResponse);

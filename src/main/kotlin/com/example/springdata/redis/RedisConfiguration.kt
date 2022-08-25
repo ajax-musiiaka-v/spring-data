@@ -1,75 +1,76 @@
 package com.example.springdata.redis
 
 import com.example.springdata.entity.BankAccount
-import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer
+import com.google.gson.*
+import org.bson.types.ObjectId
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.cache.RedisCacheConfiguration
-import org.springframework.data.redis.cache.RedisCacheManager.RedisCacheManagerBuilder
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.ReactiveRedisTemplate
-import org.springframework.data.redis.serializer.*
+import org.springframework.data.redis.serializer.RedisSerializationContext
+import org.springframework.data.redis.serializer.RedisSerializer
+import org.springframework.data.redis.serializer.StringRedisSerializer
+import java.lang.reflect.Type
+import java.time.Duration
 
 
 @Configuration
 //@EnableRedisRepositories
 class RedisConfiguration {
-//    private val entryTtl = Duration.ofSeconds(30L)
 
-//    @Bean // serialize as list
-//    fun reactiveRedisTemplate(factory: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, BankAccount> {
-//        val keySerializer = StringRedisSerializer()
-//        val valueSerializer = Jackson2JsonRedisSerializer(BankAccount::class.java)
-//        val contextBuilder: RedisSerializationContext.RedisSerializationContextBuilder<String, BankAccount> =
-//            RedisSerializationContext.newSerializationContext(keySerializer)
-//        val context = contextBuilder.value(valueSerializer).build()
-//
-//        return ReactiveRedisTemplate(factory, context)
-//    }
+    @Value("\${spring.data.redis.bank_accounts_db}")
+    private lateinit var KEY: String
 
-    @Bean // serialize as hash
-    fun reactiveRedisTemplate(factory: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, BankAccount> {
-        val contextBuilder: RedisSerializationContext.RedisSerializationContextBuilder<String, BankAccount> =
-            RedisSerializationContext.newSerializationContext(StringRedisSerializer())
+    @Bean
+    fun reactiveRedisConnectionFactory(): ReactiveRedisConnectionFactory {
+        return LettuceConnectionFactory()
+    }
 
-        val context = contextBuilder
-            .key(StringRedisSerializer())
-            .value(GenericToStringSerializer(BankAccount::class.java))
-            .hashKey(StringRedisSerializer())
-            .hashValue(GenericJackson2JsonRedisSerializer())
-            .build()
+    @Bean // serialize
+    fun redisTemplate(factory: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, BankAccount> {
+
+        val context: RedisSerializationContext<String, BankAccount> =
+            RedisSerializationContext
+                .newSerializationContext<String, BankAccount>(StringRedisSerializer())
+                .key(StringRedisSerializer())
+                .value(BankAccountSerializer())
+                .hashKey(StringRedisSerializer())
+                .hashValue(BankAccountSerializer())
+                .build()
 
         return ReactiveRedisTemplate(factory, context)
     }
+}
 
-    @Bean
-    fun redisCacheManagerBuilderCustomizer(): RedisCacheManagerBuilderCustomizer {
-        return RedisCacheManagerBuilderCustomizer { builder: RedisCacheManagerBuilder ->
-            builder
-                .withCacheConfiguration(
-                    "accounts_cache",
-                    RedisCacheConfiguration.defaultCacheConfig()
-//                        .entryTtl(Duration.ofMinutes(10))
-                )
-        }
+class BankAccountSerializer : RedisSerializer<BankAccount> {
+    override fun serialize(t: BankAccount?): ByteArray {
+        return GsonBuilder().registerTypeAdapter(ObjectId::class.java, ObjectIdSerializer())
+            .create().toJson(t).toByteArray()
     }
 
-//    @Bean
-//    fun keyCommands(factory: ReactiveRedisConnectionFactory): ReactiveKeyCommands {
-//        return factory.reactiveConnection
-//            .keyCommands()
-//    }
-//
-//    @Bean
-//    fun stringCommands(factory: ReactiveRedisConnectionFactory): ReactiveStringCommands {
-//        return factory.reactiveConnection
-//            .stringCommands()
-//    }
+    override fun deserialize(bytes: ByteArray?): BankAccount? {
+        if(bytes == null) return null
 
-//    @Bean
-//    fun cacheConfig(): RedisCacheConfiguration {
-//        return RedisCacheConfiguration.defaultCacheConfig()
-//            .entryTtl(entryTtl)
-//            .serializeValuesWith(SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer()))
-//    }
+        return GsonBuilder().registerTypeAdapter(ObjectId::class.java, ObjectIdDeserializer())
+            .create().fromJson(String(bytes), BankAccount::class.java)
+    }
+}
+
+class ObjectIdSerializer : JsonSerializer<ObjectId> {
+    override fun serialize(id: ObjectId, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+        val jsonObj = JsonObject()
+        jsonObj.add("id", JsonPrimitive(id.toString()))
+
+        return jsonObj
+    }
+}
+
+class ObjectIdDeserializer : JsonDeserializer<ObjectId> {
+    override fun deserialize(jsonElement: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ObjectId {
+        val jsonObject = jsonElement.asJsonObject
+
+        return ObjectId(jsonObject.get("id").asString)
+    }
 }

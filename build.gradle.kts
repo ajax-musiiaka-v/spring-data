@@ -44,7 +44,6 @@ dependencies {
 
 	// Spring Boot Starter Data Redis Reactive
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive:2.7.3")
-	implementation("org.springframework.boot:spring-boot-starter-cache:2.7.3")
 
 	// gRPC
 	implementation("io.grpc:grpc-netty:$grpcVersion")
