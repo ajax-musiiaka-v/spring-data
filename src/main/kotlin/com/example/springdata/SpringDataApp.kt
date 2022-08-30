@@ -9,9 +9,10 @@ import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 
-@SpringBootApplication(exclude = [MongoAutoConfiguration::class, MongoDataAutoConfiguration::class, SpringDataWebAutoConfiguration::class,
+@SpringBootApplication(exclude = [MongoAutoConfiguration::class,
+	MongoDataAutoConfiguration::class, SpringDataWebAutoConfiguration::class,
 	RedisAutoConfiguration::class, RedisRepositoriesAutoConfiguration::class])
-@EnableMongoRepositories(basePackages=["com.example.springdata.repository"])
+//@EnableMongoRepositories(basePackages=["com.example.springdata.repository"])
 class SpringDataApp
 
 fun main(args: Array<String>) {

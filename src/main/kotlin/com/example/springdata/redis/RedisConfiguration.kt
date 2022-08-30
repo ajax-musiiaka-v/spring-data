@@ -3,7 +3,6 @@ package com.example.springdata.redis
 import com.example.springdata.entity.BankAccount
 import com.google.gson.*
 import org.bson.types.ObjectId
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
@@ -13,15 +12,9 @@ import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.RedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import java.lang.reflect.Type
-import java.time.Duration
-
 
 @Configuration
-//@EnableRedisRepositories
 class RedisConfiguration {
-
-    @Value("\${spring.data.redis.bank_accounts_db}")
-    private lateinit var KEY: String
 
     @Bean
     fun reactiveRedisConnectionFactory(): ReactiveRedisConnectionFactory {

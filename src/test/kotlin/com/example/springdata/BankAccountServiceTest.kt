@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 import org.springframework.test.context.ActiveProfiles
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
@@ -24,6 +26,7 @@ import java.lang.UnsupportedOperationException
 
 @SpringBootTest
 @ActiveProfiles("test")
+@EnableMongoRepositories(basePackages=["com.example.springdata.repository"])
 class BankAccountServiceTest {
     @Autowired
     lateinit var userService: UserService

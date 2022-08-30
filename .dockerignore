@@ -1,0 +1,12 @@
+.idea
+*.iml
+.git/
+.gitignore
+.gradle
+gradle
+out/
+Dockerfile
+Jenkinsfile
+
+mongo_data/*
+redis_data/*
