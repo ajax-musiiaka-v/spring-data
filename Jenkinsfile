@@ -9,6 +9,7 @@ pipeline {
             steps {
                 echo "Build project"
                 sh "pwd"
+                sh "ls -la"
                 sh "gradle build -x test"
 
             }
